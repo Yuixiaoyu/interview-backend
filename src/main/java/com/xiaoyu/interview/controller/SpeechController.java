@@ -35,9 +35,9 @@ public class SpeechController{
     public void ttsFile() throws IOException {
         // 使用构建器模式创建 DashScopeSpeechSynthesisOptions 实例并设置参数
         DashScopeSpeechSynthesisOptions options = DashScopeSpeechSynthesisOptions.builder()
-                .withSpeed(1.0)        // 设置语速
-                .withPitch(0.9)         // 设置音调
-                .withVolume(75)         // 设置音量
+                .speed(1.0F)        // 设置语速
+                .pitch(0.9)         // 设置音调
+                .volume(75)         // 设置音量
                 .build();
         SpeechSynthesisResponse response = speechSynthesisModel.call(new SpeechSynthesisPrompt(TEXT,options));
         File file = new File(FILE_PATH + "/output.mp3");

@@ -32,9 +32,19 @@ class LocalModelTest {
 
     @Test
     public void testAIResponse() {
-        String answer = ollamaChatModel.call(new Prompt("你好呀"))
+        String answer = ollamaChatModel.call(new Prompt("你好呀,我是飞宇"))
                 .getResult().getOutput().getText();
+
         System.out.println(answer);
+
+    }
+
+    @Test
+    public void testLocalChatMemory(){
+        localModel.startInterview("你好,我是飞宇","1");
+        String s = localModel.startInterview("你好，我刚才说我是谁来着？", "1");
+        System.out.println(s);
+
     }
 
     @Test

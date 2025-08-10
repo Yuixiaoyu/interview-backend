@@ -1,22 +1,16 @@
 package com.xiaoyu.interview.ai;
 
-import com.xiaoyu.interview.advisor.MyLoggerAdvisor;
-import com.xiaoyu.interview.advisor.ReReadingAdvisor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemory;
+import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.List;
-
-import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_CONVERSATION_ID_KEY;
-import static org.springframework.ai.chat.client.advisor.AbstractChatMemoryAdvisor.CHAT_MEMORY_RETRIEVE_SIZE_KEY;
 
 /**
  * ClassName: LocalModel
@@ -97,6 +91,7 @@ public class LocalModel {
 *   **灵活应对：** **上下文是根本！** 根据候选人的每条回答内容即时调整下一个问题的方向和深度,不要自己模拟，需要等用户回答。
 *   **避免重复：** **每次只问一个问题！** 避免重复提问或偏离主题。
 """;
+    private final ChatMemory chatMemory;
 
 
     /**
@@ -105,17 +100,22 @@ public class LocalModel {
      */
     public LocalModel(ChatModel ollamaChatModel) {
         //基于内存的memory
-        ChatMemory chatMemory = new InMemoryChatMemory();
+        MessageWindowChatMemory chatMemory = MessageWindowChatMemory.builder()
+                .chatMemoryRepository(new InMemoryChatMemoryRepository())
+                .maxMessages(20)
+                .build();
         chatClient = ChatClient.builder(ollamaChatModel)
-                .defaultSystem(SYSTEM_PROMPT)
+                //.defaultSystem(SYSTEM_PROMPT)
+                .defaultSystem("你是一个经验丰富的程序员")
                 .defaultAdvisors(
-                        new MessageChatMemoryAdvisor(chatMemory),
+                        MessageChatMemoryAdvisor.builder(chatMemory).build()
                         //自定义日志Advisor
-                        new MyLoggerAdvisor( )
+                        //new MyLoggerAdvisor( )
                         //自定义推理增量advisor
                         //new ReReadingAdvisor()
                 )
                 .build();
+        this.chatMemory = chatMemory;
     }
 
     /**
@@ -124,11 +124,11 @@ public class LocalModel {
      * @param chatId
      * @return
      */
+    //CHAT_MEMORY_RETRIEVE_SIZE_KEY
     public String startInterview(String message,String chatId){
         ChatResponse chatResponse = chatClient.prompt()
                 .user(message)
-                .advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY,chatId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 30))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID,chatId))
                 .call()
                 .chatResponse();
         String content = chatResponse.getResult().getOutput().getText();
@@ -151,8 +151,7 @@ public class LocalModel {
         InterviewReport interviewReport = chatClient.prompt()
                 .user(message)
                 .system(SYSTEM_PROMPT + "每次对话后都要生成面试结果，标题为｛用户名｝的面试报告，内容为建议列表")
-                .advisors(advisorSpec -> advisorSpec.param(CHAT_MEMORY_CONVERSATION_ID_KEY, chatId)
-                        .param(CHAT_MEMORY_RETRIEVE_SIZE_KEY, 30))
+                .advisors(advisorSpec -> advisorSpec.param(ChatMemory.CONVERSATION_ID, chatId))
                 .call()
                 .entity(InterviewReport.class);
 
