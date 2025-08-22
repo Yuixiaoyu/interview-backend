@@ -6,7 +6,7 @@ application-dev.yml
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
+!**/src/main/**/target/*
 !**/src/test/**/target/
 
 ### STS ###
@@ -147,3 +147,4 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
+/src/main/resources/tts/

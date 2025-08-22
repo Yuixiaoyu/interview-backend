@@ -19,15 +19,13 @@ public class RedissonConfig {
 
     private Integer database;
 
-    private String password;
 
     @Bean
     public RedissonClient redissonClient() {
         Config config = new Config();
         config.useSingleServer()
         .setAddress("redis://" + host + ":" + port)
-        .setDatabase(database)
-        .setPassword(password);
+        .setDatabase(database);
         return Redisson.create(config);
     }
 }

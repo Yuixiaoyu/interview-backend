@@ -14,7 +14,8 @@ public enum FileUploadBizEnum {
 
     USER_AVATAR("用户头像", "avatar"),
     USER_INTERVIEW("用户面试", "interview"),
-    VIEW_VIDEO("面试视频", "viewVideo");
+    VIEW_VIDEO("面试视频", "viewVideo"),
+    RESUME("简历", "resume");
 
     private final String text;
 

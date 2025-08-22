@@ -1,18 +1,30 @@
 package com.xiaoyu.interview.controller;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.json.JSONUtil;
+import com.xiaoyu.interview.ai.FileAnalyzeModel;
 import com.xiaoyu.interview.common.BaseResponse;
 import com.xiaoyu.interview.common.ErrorCode;
 import com.xiaoyu.interview.common.ResultUtils;
 import com.xiaoyu.interview.constant.FileConstant;
 import com.xiaoyu.interview.exception.BusinessException;
 import com.xiaoyu.interview.manager.CosManager;
-import com.xiaoyu.interview.model.dto.file.UploadFileRequest;
 import com.xiaoyu.interview.model.entity.User;
+import com.xiaoyu.interview.model.entity.aifileresponse.ResumeDocument;
 import com.xiaoyu.interview.model.enums.FileUploadBizEnum;
 import com.xiaoyu.interview.service.UserService;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.xiaoyu.interview.utils.PdfUtils;
+import com.xiaoyu.interview.utils.ResumeParser;
+import com.xiaoyu.interview.utils.WordUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 文件接口
- *
-
  */
 @RestController
 @RequestMapping("/file")
@@ -36,6 +46,9 @@ public class FileController {
     @Resource
     private CosManager cosManager;
 
+    @Resource
+    private FileAnalyzeModel fileAnalyzeModel;
+
     /**
      * 文件上传
      *
@@ -46,7 +59,8 @@ public class FileController {
      */
     @PostMapping("/upload")
     public BaseResponse<String> uploadFile(@RequestPart("file") MultipartFile multipartFile,
-                                           String biz, HttpServletRequest request) {
+                                           @RequestParam(name = "biz", required = false, defaultValue = "resume") String biz,
+                                           HttpServletRequest request) {
         //String biz = uploadFileRequest.getBiz();
         FileUploadBizEnum fileUploadBizEnum = FileUploadBizEnum.getEnumByValue(biz);
         if (fileUploadBizEnum == null) {
@@ -96,9 +110,43 @@ public class FileController {
             if (fileSize > ONE_M) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过 1M");
             }
-            if (!Arrays.asList("jpeg", "jpg", "svg", "png", "webp","pdf","doc","docx").contains(fileSuffix)) {
+            if (!Arrays.asList("jpeg", "jpg", "svg", "png", "webp").contains(fileSuffix)) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件类型错误");
+            }
+        } else if (FileUploadBizEnum.RESUME.equals(fileUploadBizEnum)) {
+            if (fileSize > ONE_M * 20) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过 20M");
+            }
+            if (!Arrays.asList("pdf", "doc", "docx").contains(fileSuffix)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件类型错误");
             }
         }
+    }
+
+    @PostMapping("/resume/analyze/upload")
+    public BaseResponse<ResumeDocument> resumeUploadFileAnalyzeLocal(@RequestPart("file") MultipartFile multipartFile,
+                                           @RequestParam(name = "biz", required = false, defaultValue = "resume") String biz,
+                                           HttpServletRequest request) {
+        FileUploadBizEnum fileUploadBizEnum = FileUploadBizEnum.getEnumByValue(biz);
+        if (fileUploadBizEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        validFile(multipartFile, fileUploadBizEnum);
+        User loginUser = userService.getLoginUser(request);
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String filename = multipartFile.getOriginalFilename();
+            if(filename.endsWith(".pdf")) {
+                List<String> paragraphs = PdfUtils.extractParagraphs(multipartFile.getInputStream());
+                result = ResumeParser.parseParagraphs(paragraphs);
+            } else if(filename.endsWith(".doc") || filename.endsWith(".docx")) {
+                List<String> paragraphs = WordUtils.extractParagraphs(multipartFile.getInputStream());
+                result = ResumeParser.parseParagraphs(paragraphs);
+            }
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+        }
+        ResumeDocument resumeDocument = fileAnalyzeModel.analyzeResume(JSONUtil.toJsonStr(result), UUID.fastUUID().toString());
+        return ResultUtils.success(resumeDocument);
     }
 }
