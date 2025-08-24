@@ -2,12 +2,11 @@ package com.xiaoyu.interview.controller;
 
 import cn.hutool.core.io.FileUtil;
 import com.xiaoyu.interview.ai.FileAnalyzeModel;
-import com.xiaoyu.interview.ai.ResumeAiClient;
+import com.xiaoyu.interview.ai.ResumeAiModel;
 import com.xiaoyu.interview.common.BaseResponse;
 import com.xiaoyu.interview.common.ErrorCode;
 import com.xiaoyu.interview.common.ResultUtils;
 import com.xiaoyu.interview.constant.FileConstant;
-import com.xiaoyu.interview.constant.RedisConstant;
 import com.xiaoyu.interview.exception.BusinessException;
 import com.xiaoyu.interview.manager.CosManager;
 import com.xiaoyu.interview.model.entity.ResumeDocument;
@@ -49,7 +48,7 @@ public class FileController {
     private FileAnalyzeModel fileAnalyzeModel;
 
     @Resource
-    private ResumeAiClient resumeAiClient;
+    private ResumeAiModel resumeAiModel;
 
     @Resource
     private RedisUtil redisUtil;
@@ -102,7 +101,7 @@ public class FileController {
             document.close();
 
             // === 异步调用 AI 解析简历 ===
-            resumeAiClient.analyzeResume(imageFile.getAbsolutePath(),loginUser.getId());
+            resumeAiModel.analyzeResume(imageFile.getAbsolutePath(),loginUser.getId());
 
             // 返回可访问地址
             return ResultUtils.success(fileUrl);
@@ -119,7 +118,7 @@ public class FileController {
             }
         }
     }
-    /**q
+    /**
      * 查看redis简历信息
      */
     @GetMapping("/resume/get")

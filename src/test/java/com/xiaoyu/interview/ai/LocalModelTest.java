@@ -1,5 +1,8 @@
 package com.xiaoyu.interview.ai;
 
+import com.alibaba.dashscope.exception.InputRequiredException;
+import com.alibaba.dashscope.exception.NoApiKeyException;
+import com.xiaoyu.interview.model.entity.AIGenerateQuestions;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -29,6 +32,9 @@ class LocalModelTest {
     private LocalModel localModel;
     @Resource
     private ChatModel ollamaChatModel;
+
+    @Resource
+    private GenerateQuestionModel generateQuestionModel;
 
 
     @Test
@@ -120,5 +126,18 @@ class LocalModelTest {
         String message = "我准备好开始面试了";
         String answer = localModel.startInterview(message, chatId);
         System.out.println(answer);
+    }
+
+    @Test
+    public void testAIGenerate(){
+        String userResume = """
+                """;
+        AIGenerateQuestions aiGenerateQuestions = null;
+        try {
+            generateQuestionModel.generateQuestion(userResume,1L);
+        } catch (NoApiKeyException | InputRequiredException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(aiGenerateQuestions);
     }
 }

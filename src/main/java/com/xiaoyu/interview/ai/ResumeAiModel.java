@@ -1,12 +1,14 @@
 package com.xiaoyu.interview.ai;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversation;
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversationParam;
 import com.alibaba.dashscope.aigc.multimodalconversation.MultiModalConversationResult;
 import com.alibaba.dashscope.common.MultiModalMessage;
 import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.exception.ApiException;
+import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.dashscope.exception.UploadFileException;
 import com.google.gson.Gson;
@@ -34,13 +36,16 @@ import java.util.*;
  */
 @Component
 @Slf4j
-public class ResumeAiClient {
+public class ResumeAiModel {
 
     @Resource
     private DashScopeConfig dashScopeConfig;
 
     @Resource
     private RedisUtil redisUtil;
+
+    @Resource
+    private GenerateQuestionModel generateQuestionModel;
 
     /**
      * redis存放简历的过期时间
@@ -125,11 +130,10 @@ public class ResumeAiClient {
 
     @Async
     public void analyzeResume(String localPath, Long userId)
-            throws ApiException, NoApiKeyException, UploadFileException, IOException {
+            throws ApiException, NoApiKeyException, UploadFileException, IOException, InputRequiredException {
         if (StrUtil.isBlank(localPath)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-
         Path path = Paths.get(localPath);
         byte[] imageBytes = Files.readAllBytes(path);
         String base64Image = Base64.getEncoder().encodeToString(imageBytes);
@@ -159,5 +163,8 @@ public class ResumeAiClient {
         Object text = objectMap.get("text");
         ResumeDocument resumeDocument = new Gson().fromJson(text.toString(), ResumeDocument.class);
         redisUtil.set(RedisConstant.USER_RESUME_REDIS_KEY_PREFIX + userId, resumeDocument, RESUME_TIMEOUT);
+        //异步调用生成题目
+        String resumeJson = JSONUtil.toJsonStr(resumeDocument);
+        generateQuestionModel.generateQuestion(resumeJson,userId);
     }
 }

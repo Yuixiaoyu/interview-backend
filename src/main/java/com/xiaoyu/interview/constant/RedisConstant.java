@@ -12,7 +12,7 @@ public interface RedisConstant {
     /**
      * 用户签到记录的 Redis Key 前缀
      */
-    String USER_SIGN_IN_REDIS_KEY_PREFIX = "user:signins";
+    String USER_SIGN_IN_REDIS_KEY_PREFIX = "interview:user:signins";
 
     /**
      * 获取用户签到记录的 Redis Key
@@ -27,6 +27,11 @@ public interface RedisConstant {
     /**
      * 用户简历信息前缀
      */
-    String USER_RESUME_REDIS_KEY_PREFIX = "user:resume:";
+    String USER_RESUME_REDIS_KEY_PREFIX = "interview:user:resume:";
+
+    /**
+     * 用户题目信息前缀
+     */
+    String USER_QUESTION_REDIS_KEY_PREFIX = "interview:user:question:";
 
 }
