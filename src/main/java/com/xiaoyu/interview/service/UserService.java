@@ -3,6 +3,7 @@ package com.xiaoyu.interview.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiaoyu.interview.model.dto.user.UserQueryRequest;
+import com.xiaoyu.interview.model.entity.ResumeDocument;
 import com.xiaoyu.interview.model.entity.User;
 import com.xiaoyu.interview.model.vo.LoginUserVO;
 import com.xiaoyu.interview.model.vo.UserVO;
@@ -137,4 +138,10 @@ public interface UserService extends IService<User> {
     List<Integer> getUserSignInRecord(long userId, Integer year);
 
 
+    /**
+     * 获取当前用户简历
+     * @param request
+     * @return
+     */
+    ResumeDocument getCurrentUserResume(HttpServletRequest request);
 }

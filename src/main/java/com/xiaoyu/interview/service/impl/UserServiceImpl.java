@@ -7,13 +7,16 @@ import com.xiaoyu.interview.common.ErrorCode;
 import com.xiaoyu.interview.constant.CommonConstant;
 import com.xiaoyu.interview.constant.RedisConstant;
 import com.xiaoyu.interview.exception.BusinessException;
+import com.xiaoyu.interview.exception.ThrowUtils;
 import com.xiaoyu.interview.mapper.UserMapper;
 import com.xiaoyu.interview.model.dto.user.UserQueryRequest;
+import com.xiaoyu.interview.model.entity.ResumeDocument;
 import com.xiaoyu.interview.model.entity.User;
 import com.xiaoyu.interview.model.enums.UserRoleEnum;
 import com.xiaoyu.interview.model.vo.LoginUserVO;
 import com.xiaoyu.interview.model.vo.UserVO;
 import com.xiaoyu.interview.service.UserService;
+import com.xiaoyu.interview.utils.RedisUtil;
 import com.xiaoyu.interview.utils.SqlUtils;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -26,6 +29,7 @@ import org.springframework.util.DigestUtils;
 
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.*;
@@ -35,8 +39,6 @@ import static com.xiaoyu.interview.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户服务实现
- *
-
  */
 @Service
 @Slf4j
@@ -50,6 +52,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 盐值，混淆密码
      */
     public static final String SALT = "xiaoyu";
+
+    @Resource
+    private RedisUtil redisUtil;
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -293,7 +298,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //查询当天是否签到
         if (!signInBitSet.get(offset)) {
             //未签到
-            return signInBitSet.set(offset,true);
+            return signInBitSet.set(offset, true);
         }
         //当天以签到
         return true;
@@ -301,7 +306,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public List<Integer> getUserSignInRecord(long userId, Integer year) {
-        if (year == null){
+        if (year == null) {
             LocalDate date = LocalDate.now();
             year = date.getYear();
         }
@@ -319,10 +324,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         //从索引0开始查找下一个被设置为1的位
         int index = bitSet.nextSetBit(0);
-        while (index>=0 && index<=totalDays){
+        while (index >= 0 && index <= totalDays) {
             dayList.add(index);
             //继续查询下一个为1的位
-            index = bitSet.nextSetBit(index+1);
+            index = bitSet.nextSetBit(index + 1);
         }
 
         //遍历查询每一天是否签到
@@ -338,5 +343,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //    }
         //}
         return dayList;
+    }
+
+    @Override
+    public ResumeDocument getCurrentUserResume(HttpServletRequest request) {
+
+        if (request == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = this.getLoginUser(request);
+        ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
+        return redisUtil.get(RedisConstant.USER_RESUME_REDIS_KEY_PREFIX + loginUser.getId(), ResumeDocument.class);
     }
 }

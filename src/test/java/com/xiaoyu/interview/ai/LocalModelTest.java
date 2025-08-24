@@ -8,6 +8,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.File;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,6 +38,17 @@ class LocalModelTest {
 
         System.out.println(answer);
 
+    }
+
+    @Test
+    public void testImage(){
+        File dir = new File("src/main/resources/resumeImage");
+        String uuid = UUID.randomUUID().toString();
+        File imageFile = new File(dir, uuid + ".png");
+        String absolutePath = imageFile.getAbsolutePath();
+        String correctedPath = absolutePath.replace("\\", "/");
+        String filePath = "file:///" + correctedPath;
+        System.out.println(filePath);
     }
 
     @Test

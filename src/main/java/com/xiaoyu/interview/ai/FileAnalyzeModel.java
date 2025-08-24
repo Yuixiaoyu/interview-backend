@@ -1,6 +1,6 @@
 package com.xiaoyu.interview.ai;
 
-import com.xiaoyu.interview.model.entity.aifileresponse.ResumeDocument;
+import com.xiaoyu.interview.model.entity.ResumeDocument;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -8,10 +8,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * ClassName: LocalModel

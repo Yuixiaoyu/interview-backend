@@ -24,4 +24,9 @@ public interface RedisConstant {
         return String.format("%s:%s:%s", USER_SIGN_IN_REDIS_KEY_PREFIX, year, userId);
     }
 
+    /**
+     * 用户简历信息前缀
+     */
+    String USER_RESUME_REDIS_KEY_PREFIX = "user:resume:";
+
 }
