@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaoyu.interview.mapper.AiInterviewRecordsMapper">
+
+    <resultMap id="BaseResultMap" type="com.xiaoyu.interview.model.entity.AiInterviewRecords">
+            <id property="id" column="id" />
+            <result property="content" column="content" />
+            <result property="sessionId" column="sessionId" />
+            <result property="userId" column="userId" />
+            <result property="type" column="type" />
+            <result property="score" column="score" />
+            <result property="createTime" column="createTime" />
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,content,sessionId,userId,type,score,
+        createTime
+    </sql>
+</mapper>

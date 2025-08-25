@@ -2,6 +2,7 @@ package com.xiaoyu.interview.model.entity;
 
 import lombok.Data;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 
 @Data
@@ -10,4 +11,5 @@ public class AIAnalysisNextQuestions {
     private int seq;        // 题号
     private String type;   //类型
     private String question;  // 下一个问题
+    private ByteBuffer tts;
 }

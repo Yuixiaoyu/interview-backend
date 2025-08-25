@@ -47,7 +47,7 @@ public class TTSAIServiceImpl implements TTSAIService {
             SpeechSynthesisParam param =
                     SpeechSynthesisParam.builder()
                             // 若没有将API Key配置到环境变量中，需将下面这行代码注释放开，并将your-api-key替换为自己的API Key
-                            .apiKey("sk-1f8af108e1ab471e8cd5030da571e566")
+                            .apiKey("your-key")
                             .model(model) // 模型
                             .voice(voice) // 音色
                             .build();
