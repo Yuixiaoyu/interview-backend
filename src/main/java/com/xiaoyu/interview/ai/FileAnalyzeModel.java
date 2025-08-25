@@ -124,7 +124,7 @@ public class FileAnalyzeModel {
 
 
     /**
-     * AI 报告功能（支持结构化输出）
+     * AI 分析简历（支持结构化输出）
      *
      * @param message
      * @param chatId

@@ -140,4 +140,26 @@ class LocalModelTest {
         }
         System.out.println(aiGenerateQuestions);
     }
+
+    @Test
+    public void testAnswer(){
+        String userPrompt = """
+                下面是候选人的信息与回答，请根据系统提示词要求输出结果。
+                候选人简历 JSON：
+                {}
+                参考题目列表：
+                {}
+                上一轮题目：{}
+                候选人上一轮回答：
+                {}
+                ### 请输出：
+                {
+                  "question": "下一个问题文本（不超过50字，简洁明确）",
+                  "score": 0-10
+                }
+                """;
+        //格式化输出
+        String format = String.format(userPrompt,1,2,3,4);
+        System.out.println(format);
+    }
 }

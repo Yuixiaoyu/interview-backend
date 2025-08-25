@@ -44,7 +44,7 @@ public class GenerateQuestionModel {
     /**
      * 题目过期时间（秒）
      */
-    private static final int QUESTION_TIMEOUT = 60 * 40;
+    private static final int QUESTION_TIMEOUT = 60 * 60*4;
 
     @Resource
     private DashScopeConfig dashScopeConfig;
@@ -106,11 +106,8 @@ public class GenerateQuestionModel {
                   - 用中文提问。
             """;
 
-
-
-
     /**
-     * AI 报告功能（支持结构化输出）
+     * AI 生成题目（支持结构化输出）
      *
      * @param message
      * @return

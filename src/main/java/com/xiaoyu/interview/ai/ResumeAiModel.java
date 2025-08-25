@@ -50,7 +50,7 @@ public class ResumeAiModel {
     /**
      * redis存放简历的过期时间
      */
-    private static final Integer RESUME_TIMEOUT = 60 * 40;
+    private static final Integer RESUME_TIMEOUT = 60 * 60*4;
 
     private static final String userPrompt = "我上传了一张求职者简历的图片，请你根据系统提示词中的字段说明，提取图片中的所有信息，并按 JSON 格式返回,不要输出```json```代码段. \n" +
             "要求：\n" +
