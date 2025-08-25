@@ -12,6 +12,7 @@ import com.xiaoyu.interview.manager.CosManager;
 import com.xiaoyu.interview.model.entity.ResumeDocument;
 import com.xiaoyu.interview.model.entity.User;
 import com.xiaoyu.interview.model.enums.FileUploadBizEnum;
+import com.xiaoyu.interview.service.QuestionService;
 import com.xiaoyu.interview.service.UserService;
 
 import java.awt.image.BufferedImage;
@@ -53,6 +54,9 @@ public class FileController {
     @Resource
     private RedisUtil redisUtil;
 
+    @Resource
+    private QuestionService questionService;
+
     /**
      * 文件上传
      *
@@ -79,29 +83,30 @@ public class FileController {
         File file = null;
         try {
 
-            // === PDF 转图片 ===
-            PDDocument document = PDDocument.load(multipartFile.getInputStream());
-            PDFRenderer pdfRenderer = new PDFRenderer(document);
+            if (fileUploadBizEnum.equals(FileUploadBizEnum.RESUME)) {
+                // === PDF 转图片 ===
+                PDDocument document = PDDocument.load(multipartFile.getInputStream());
+                PDFRenderer pdfRenderer = new PDFRenderer(document);
 
-            File dir = new File("src/main/resources/resumeImage");
-            if (!dir.exists()) dir.mkdirs();
+                File dir = new File("src/main/resources/resumeImage");
+                if (!dir.exists()) dir.mkdirs();
 
-            // 上传文件
-            file = File.createTempFile(filepath, null);
-            multipartFile.transferTo(file);
-            cosManager.putObject(filepath, file);
+                // 上传文件
+                file = File.createTempFile(filepath, null);
+                multipartFile.transferTo(file);
+                cosManager.putObject(filepath, file);
 
+                // 这里只取第一页，若要支持多页，可循环
+                BufferedImage bim = pdfRenderer.renderImageWithDPI(0, 200, ImageType.RGB);
+                String fileName = UUID.randomUUID().toString();
+                File imageFile = new File(dir, fileName + ".png");
+                ImageIO.write(bim, "png", imageFile);
+                document.close();
+
+                // === 异步调用 AI 解析简历 ===
+                resumeAiModel.analyzeResume(imageFile.getAbsolutePath(),loginUser.getId());
+            }
             String fileUrl = FileConstant.COS_HOST + filepath;
-
-            // 这里只取第一页，若要支持多页，可循环
-            BufferedImage bim = pdfRenderer.renderImageWithDPI(0, 200, ImageType.RGB);
-            String fileName = UUID.randomUUID().toString();
-            File imageFile = new File(dir, fileName + ".png");
-            ImageIO.write(bim, "png", imageFile);
-            document.close();
-
-            // === 异步调用 AI 解析简历 ===
-            resumeAiModel.analyzeResume(imageFile.getAbsolutePath(),loginUser.getId());
 
             // 返回可访问地址
             return ResultUtils.success(fileUrl);
@@ -128,6 +133,14 @@ public class FileController {
         }
         ResumeDocument resumeDocument = userService.getCurrentUserResume(request);
         return ResultUtils.success(resumeDocument);
+    }
+
+    @GetMapping("/question/get")
+    public BaseResponse<List<String>> questionGet(HttpServletRequest request) {
+        if (request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return ResultUtils.success(questionService.getInterviewQuestions(request));
     }
     /**
      * 校验文件

@@ -1,5 +1,6 @@
 package com.xiaoyu.interview.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -120,6 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         // 3. 记录用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        StpUtil.login(user.getId());
         return this.getLoginUserVO(user);
     }
 
@@ -156,7 +158,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 获取当前登录用户
+     * 获取当前登录用户（session）
      *
      * @param request
      * @return
@@ -177,6 +179,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return currentUser;
     }
+
 
     /**
      * 获取当前登录用户（允许未登录）

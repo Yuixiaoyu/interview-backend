@@ -15,6 +15,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiaoyu.interview.common.ErrorCode;
 import com.xiaoyu.interview.constant.CommonConstant;
+import com.xiaoyu.interview.constant.RedisConstant;
+import com.xiaoyu.interview.exception.BusinessException;
 import com.xiaoyu.interview.exception.ThrowUtils;
 import com.xiaoyu.interview.mapper.QuestionMapper;
 import com.xiaoyu.interview.model.dto.question.QuestionEsDTO;
@@ -27,6 +29,7 @@ import com.xiaoyu.interview.model.vo.UserVO;
 import com.xiaoyu.interview.service.QuestionBankQuestionService;
 import com.xiaoyu.interview.service.QuestionService;
 import com.xiaoyu.interview.service.UserService;
+import com.xiaoyu.interview.utils.RedisUtil;
 import com.xiaoyu.interview.utils.SqlUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -62,6 +65,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     @Resource
     private ElasticsearchOperations elasticsearchOperations;
+
+    @Resource
+    private RedisUtil redisUtil;
 
     /**
      * 校验数据
@@ -418,6 +424,15 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         boolean result = removeBatchByIds(questionIdList);
         ThrowUtils.throwIf(!result,ErrorCode.SYSTEM_ERROR,"题目删除失败");
 
+    }
+
+    @Override
+    public List<String> getInterviewQuestions(HttpServletRequest request) {
+        if (request == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        return redisUtil.getList(RedisConstant.USER_QUESTION_REDIS_KEY_PREFIX + loginUser.getId());
     }
 
     // 应用过滤条件的辅助方法

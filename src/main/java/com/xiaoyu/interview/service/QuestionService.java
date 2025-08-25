@@ -82,4 +82,7 @@ public interface QuestionService extends IService<Question> {
      */
     void batchRemoveQuestions(List<Long> questionIdList);
 
+
+    List<String> getInterviewQuestions(HttpServletRequest request);
+
 }
