@@ -75,7 +75,7 @@ public class FileController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         validFile(multipartFile, fileUploadBizEnum);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         // 文件目录：根据业务、用户来划分
         String uuid = UUID.randomUUID().toString();
         String filename = uuid + "-" + multipartFile.getOriginalFilename();
@@ -183,7 +183,7 @@ public class FileController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         validFile(multipartFile, fileUploadBizEnum);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         ResumeDocument resumeDocument = null;
         try {

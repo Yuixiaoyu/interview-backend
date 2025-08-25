@@ -61,7 +61,7 @@ public class QuestionBankQuestionController {
         questionBankQuestionService.validQuestionBankQuestion(questionBankQuestion, true);
 
         // todo 填充默认值
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         questionBankQuestion.setUserId(loginUser.getId());
         // 写入数据库
         boolean result = questionBankQuestionService.save(questionBankQuestion);
@@ -83,7 +83,7 @@ public class QuestionBankQuestionController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userService.getLoginUser(request);
+        User user = userService.getLoginUser();
         long id = deleteRequest.getId();
         // 判断是否存在
         QuestionBankQuestion oldQuestionBankQuestion = questionBankQuestionService.getById(id);
@@ -191,7 +191,7 @@ public class QuestionBankQuestionController {
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(questionBankQuestionQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // 补充查询条件，只查询当前登录用户的数据
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         questionBankQuestionQueryRequest.setUserId(loginUser.getId());
         long current = questionBankQuestionQueryRequest.getCurrent();
         long size = questionBankQuestionQueryRequest.getPageSize();
@@ -245,7 +245,7 @@ public class QuestionBankQuestionController {
         Long questionBankId = questionBankQuestionBatchAddRequest.getQuestionBankId();
         List<Long> questionIdList = questionBankQuestionBatchAddRequest.getQuestionIdList();
 
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
 
         questionBankQuestionService.batchAddQuestionsToBank(questionIdList,questionBankId, loginUser);
 

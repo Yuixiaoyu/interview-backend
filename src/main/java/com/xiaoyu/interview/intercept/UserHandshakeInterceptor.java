@@ -1,5 +1,6 @@
 package com.xiaoyu.interview.intercept;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.xiaoyu.interview.model.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -21,20 +22,20 @@ public class UserHandshakeInterceptor implements HandshakeInterceptor {
                                    ServerHttpResponse response,
                                    WebSocketHandler wsHandler,
                                    Map<String, Object> attributes) throws Exception {
-        if (request instanceof ServletServerHttpRequest) {
+        // 1. 拿到原始 HttpServletRequest
+        HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
 
-            HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
-
-            // 假设用户 id 存在 HttpSession 里
-            Object userObj = servletRequest.getSession().getAttribute(USER_LOGIN_STATE);
-            log.info("userObj: {}", (User) userObj);
-            // 或者你用登录认证的 Principal
-            // String userId = servletRequest.getUserPrincipal().getName();
-            if (userObj != null) {
-                attributes.put("user", (User) userObj);
-            }
+        // 2. 从参数或 header 里取 token
+        String token = servletRequest.getParameter("token");
+        if (token == null) {
+            token = servletRequest.getHeader("token"); // 也可以从 header 取
         }
-        return true;
+        Object loginId = StpUtil.getLoginIdByToken(token);
+        if (loginId != null) {
+            attributes.put("loginId", loginId);
+            return true;
+        }
+        return false; // 未登录直接拦截
     }
 
     @Override

@@ -67,7 +67,7 @@ public class QuestionBankController {
         // 数据校验
         questionBankService.validQuestionBank(questionBank, true);
         // todo 填充默认值
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         questionBank.setUserId(loginUser.getId());
         // 写入数据库
         boolean result = questionBankService.save(questionBank);
@@ -90,7 +90,7 @@ public class QuestionBankController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userService.getLoginUser(request);
+        User user = userService.getLoginUser();
         long id = deleteRequest.getId();
         // 判断是否存在
         QuestionBank oldQuestionBank = questionBankService.getById(id);
@@ -214,7 +214,7 @@ public class QuestionBankController {
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(questionBankQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // 补充查询条件，只查询当前登录用户的数据
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         questionBankQueryRequest.setUserId(loginUser.getId());
         long current = questionBankQueryRequest.getCurrent();
         long size = questionBankQueryRequest.getPageSize();
@@ -245,7 +245,7 @@ public class QuestionBankController {
         BeanUtils.copyProperties(questionBankEditRequest, questionBank);
         // 数据校验
         questionBankService.validQuestionBank(questionBank, false);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         // 判断是否存在
         long id = questionBankEditRequest.getId();
         QuestionBank oldQuestionBank = questionBankService.getById(id);

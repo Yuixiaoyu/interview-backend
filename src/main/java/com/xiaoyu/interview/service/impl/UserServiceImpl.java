@@ -120,7 +120,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
         // 3. 记录用户的登录态
-        request.getSession().setAttribute(USER_LOGIN_STATE, user);
         StpUtil.login(user.getId());
         return this.getLoginUserVO(user);
     }
@@ -158,22 +157,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     /**
-     * 获取当前登录用户（session）
+     * 获取当前登录用户
      *
-     * @param request
      * @return
      */
     @Override
-    public User getLoginUser(HttpServletRequest request) {
+    public User getLoginUser() {
         // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null || currentUser.getId() == null) {
+        if (!StpUtil.isLogin()) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
-        // 从数据库查询（追求性能的话可以注释，直接走缓存）
-        long userId = currentUser.getId();
-        currentUser = this.getById(userId);
+        long userId = StpUtil.getLoginIdAsLong();
+        User currentUser = this.getById(userId);
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
@@ -222,15 +217,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 用户注销
      *
-     * @param request
      */
     @Override
-    public boolean userLogout(HttpServletRequest request) {
-        if (request.getSession().getAttribute(USER_LOGIN_STATE) == null) {
+    public boolean userLogout() {
+        if (!StpUtil.isLogin()) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
         }
-        // 移除登录态
-        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        StpUtil.logout();
         return true;
     }
 
@@ -354,7 +347,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (request == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = this.getLoginUser(request);
+        User loginUser = this.getLoginUser();
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
         return redisUtil.get(RedisConstant.USER_RESUME_REDIS_KEY_PREFIX + loginUser.getId(), ResumeDocument.class);
     }

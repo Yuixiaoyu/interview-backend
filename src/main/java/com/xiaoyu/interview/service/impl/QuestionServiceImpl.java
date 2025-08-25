@@ -221,7 +221,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         //User loginUser = userService.getLoginUserPermitNull(request);
         //if (loginUser != null) {
         //    Set<Long> questionIdSet = questionList.stream().map(Question::getId).collect(Collectors.toSet());
-        //    loginUser = userService.getLoginUser(request);
+        //    loginUser = userService.getLoginUser();
         //    // 获取点赞
         //    QueryWrapper<QuestionThumb> questionThumbQueryWrapper = new QueryWrapper<>();
         //    questionThumbQueryWrapper.in("questionId", questionIdSet);
@@ -431,7 +431,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         if (request == null){
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         return redisUtil.getList(RedisConstant.USER_QUESTION_REDIS_KEY_PREFIX + loginUser.getId());
     }
 

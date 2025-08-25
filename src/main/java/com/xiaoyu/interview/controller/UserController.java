@@ -138,7 +138,7 @@ public class UserController {
         if (request == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        boolean result = userService.userLogout(request);
+        boolean result = userService.userLogout();
         return ResultUtils.success(result);
     }
 
@@ -150,7 +150,7 @@ public class UserController {
      */
     @GetMapping("/get/login")
     public BaseResponse<LoginUserVO> getLoginUser(HttpServletRequest request) {
-        User user = userService.getLoginUser(request);
+        User user = userService.getLoginUser();
         return ResultUtils.success(userService.getLoginUserVO(user));
     }
 
@@ -310,7 +310,7 @@ public class UserController {
         if (userUpdateMyRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         User user = new User();
         BeanUtils.copyProperties(userUpdateMyRequest, user);
         user.setId(loginUser.getId());
@@ -330,7 +330,7 @@ public class UserController {
     @PostMapping("/add/sign_in")
     public BaseResponse<Boolean> addUserSignIn(HttpServletRequest request) {
         //必须要登陆才能签到
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         ThrowUtils.throwIf(loginUser == null, ErrorCode.NOT_LOGIN_ERROR);
         boolean result = userService.addUserSignIn(loginUser.getId());
         return ResultUtils.success(result);
@@ -341,7 +341,7 @@ public class UserController {
     @GetMapping("/get/sign_in")
     public BaseResponse<List<Integer>> getUserSignInRecord(Integer year,HttpServletRequest request) {
         //必须要登陆才能获取
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         List<Integer> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
         return ResultUtils.success(userSignInRecord);
     }

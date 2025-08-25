@@ -1,11 +1,15 @@
 package com.xiaoyu.interview.ws;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.xiaoyu.interview.constant.RedisConstant;
 import com.xiaoyu.interview.model.entity.AnswerPayload;
 import com.xiaoyu.interview.model.entity.User;
+import com.xiaoyu.interview.service.UserService;
 import com.xiaoyu.interview.utils.RedisUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 
 import java.io.IOException;
@@ -24,13 +28,14 @@ import static com.xiaoyu.interview.constant.UserConstant.USER_LOGIN_STATE;
  * @version: 1.0
  */
 @Slf4j
+@Component
 public class InterviewHandler implements WebSocketHandler {
 
     @Resource
     private RedisUtil redisUtil;
 
     // 题库
-    private final List<String> questions = List.of(
+    private static List<String> questions = List.of(
             "请介绍一次高并发场景下的优化经历",
             "Redis 缓存穿透如何解决？",
             "Spring 事务失效的常见原因？"
@@ -43,12 +48,14 @@ public class InterviewHandler implements WebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         log.info("🤝 握手成功: {}", session.getId());
-        Object userObj = session.getAttributes().get("user");
-        User currentUser = (User) userObj;
-        log.info("用户信息: {}", currentUser);
-        //连接成功之前需要先判断题目是否生成，否则不能连接
-        //todo 由于这里拿到不到当前登录用户，目前方案是直接请求获取题目,如果题目为空，不让前端进行ws连接，等待获取题目
-        //session.close(new CloseStatus(4001, "题目未生成，拒绝连接"));
+        //拿到当前登录用户id
+        Object userIdObj = session.getAttributes().get("loginId");
+        //这里必须先转成string，否则会报类型转换错误
+        String userIdStr = (String) userIdObj;
+        long userId = Long.parseLong(userIdStr);
+        log.info("用户id: {}", userId);
+        //将题目信息存放到内存中
+        questions= redisUtil.getList(RedisConstant.USER_QUESTION_REDIS_KEY_PREFIX + userId);
 
         cursor.put(session, 0);
         sendQuestion(session, 0);

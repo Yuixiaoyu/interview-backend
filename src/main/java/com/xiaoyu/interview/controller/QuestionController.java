@@ -72,7 +72,7 @@ public class QuestionController {
         // 数据校验
         questionService.validQuestion(question, true);
         // todo 填充默认值
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         question.setUserId(loginUser.getId());
         // 写入数据库
         boolean result = questionService.save(question);
@@ -95,7 +95,7 @@ public class QuestionController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User user = userService.getLoginUser(request);
+        User user = userService.getLoginUser();
         long id = deleteRequest.getId();
         // 判断是否存在
         Question oldQuestion = questionService.getById(id);
@@ -204,7 +204,7 @@ public class QuestionController {
                                                                  HttpServletRequest request) {
         ThrowUtils.throwIf(questionQueryRequest == null, ErrorCode.PARAMS_ERROR);
         // 补充查询条件，只查询当前登录用户的数据
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         questionQueryRequest.setUserId(loginUser.getId());
         long current = questionQueryRequest.getCurrent();
         long size = questionQueryRequest.getPageSize();
@@ -239,7 +239,7 @@ public class QuestionController {
         }
         // 数据校验
         questionService.validQuestion(question, false);
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser();
         // 判断是否存在
         long id = questionEditRequest.getId();
         Question oldQuestion = questionService.getById(id);
